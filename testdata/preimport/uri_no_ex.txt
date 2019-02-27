@@ -1,0 +1,2 @@
+http://example1.no
+http://example2.no
