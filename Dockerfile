@@ -11,7 +11,6 @@ FROM scratch
 COPY --from=builder /go/bin/veidemann-ooshandler /usr/local/bin/veidemann-ooshandler
 
 EXPOSE 9301 50052
-
 VOLUME "/data"
 
 ENTRYPOINT ["/usr/local/bin/veidemann-ooshandler"]
