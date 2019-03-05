@@ -187,6 +187,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:5325f65188f8a9559c8f20d703b2b2684333a5e03515b6c1fbf09ffc710415af"
+  name = "golang.org/x/sync"
+  packages = ["singleflight"]
+  pruneopts = "NUT"
+  revision = "e225da77a7e68af35c70ccbf71af2b83e6acac3c"
+
+[[projects]]
+  branch = "master"
   digest = "1:6c03d13eb644d2fd8e542eb78704e62998534093cffe8012462373c1118634ba"
   name = "golang.org/x/sys"
   packages = [
@@ -293,6 +301,7 @@
     "github.com/prometheus/common/version",
     "github.com/sirupsen/logrus",
     "github.com/steakknife/bloomfilter",
+    "golang.org/x/sync/singleflight",
     "google.golang.org/grpc",
   ]
   solver-name = "gps-cdcl"
