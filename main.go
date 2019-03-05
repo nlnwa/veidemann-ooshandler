@@ -22,6 +22,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"os"
 )
 
 const indexContent = `<html>
@@ -38,6 +39,7 @@ func main() {
 
 	// Create OOSHandler
 	log.Printf("Out of Scope Handler is using directory: %v", config.DataDir)
+	os.MkdirAll(config.DataDir, 0777)
 	oosHandler := ooshandler.NewOosHandler(config.DataDir)
 
 	// Start GRPC server
