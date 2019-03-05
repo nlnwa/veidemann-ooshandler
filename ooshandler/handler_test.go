@@ -117,22 +117,27 @@ func TestOosHandler_Handle(t *testing.T) {
 func TestOosHandler_Import(t *testing.T) {
 	indata := "testdata"
 	preimport := filepath.Join(indata, "preimport")
+	fileWithDuplicates := "seeds.txt"
 
 	wd, _ := os.Getwd()
 	baseDir := filepath.Dir(wd)
 	indata = filepath.Join(baseDir, indata)
 	preimport = filepath.Join(baseDir, preimport)
+	fileWithDuplicates = filepath.Join(indata, fileWithDuplicates)
+
 	oos := NewOosHandler(preimport)
 
-	f, err := os.Open(filepath.Join(indata, "seeds.txt"))
+	f, err := os.Open(fileWithDuplicates)
 	if err != nil {
-		t.Errorf("Could not open file '%v'", "seeds.txt")
+		t.Errorf("Could not open file '%v'", fileWithDuplicates)
 	}
 	defer f.Close()
 
 	i := 0
 	dup := 0
 	buf := bufio.NewReader(f)
+	c := make(chan bool)
+
 	for {
 		l, err := buf.ReadString('\n')
 		if err == io.EOF {
@@ -148,17 +153,14 @@ func TestOosHandler_Import(t *testing.T) {
 			continue
 		}
 
-		u, g := oos.parseUriAndGroup(line)
-
-		exists := oos.bloomContains(u)
-		if exists {
-			exists = oos.isInFile(u, g)
-		}
-
+		i++
+		go func() { c <- oos.Handle(line) }()
+	}
+	for j := 0; j < i; j++ {
+		exists := <-c
 		if exists {
 			dup++
 		}
-		i++
 	}
 	if i != dup {
 		t.Errorf("Expected all %v URIs to be pre imported, but found only %v", i, dup)
