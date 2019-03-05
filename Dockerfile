@@ -7,7 +7,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go test ./... -a -ldflags '-extldflags "-s -w -static"' .
 RUN CGO_ENABLED=0 GOOS=linux go install -a -ldflags '-extldflags "-s -w -static"' .
 
-FROM scratch
+FROM alpine
 COPY --from=builder /go/bin/veidemann-ooshandler /usr/local/bin/veidemann-ooshandler
 
 EXPOSE 9301 50052
