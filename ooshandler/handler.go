@@ -126,11 +126,22 @@ func (o *OosHandler) parseUriAndGroup(uri string) (*url.URL, string) {
 	parts := strings.Split(sanitize.Name(u.Hostname()), ".")
 	var g string
 	if len(parts) >= 2 {
-		g = parts[len(parts)-1:][0] + "_" + parts[len(parts)-2:][0][:2]
+		// Get last part of host and maximum two chars from the next to last part of host
+		// www.example.com => com_ex
+		// 127.0.0.1       => 1_0
+		l := Min(2, len(parts[len(parts)-2]))
+		g = parts[len(parts)-1:][0] + "_" + parts[len(parts)-2:][0][:l]
 	} else {
 		g = u.Host
 	}
 	return u, g
+}
+
+func Min(x, y int) int {
+	if x > y {
+		return y
+	}
+	return x
 }
 
 func (o *OosHandler) bloomContains(uri *url.URL) bool {

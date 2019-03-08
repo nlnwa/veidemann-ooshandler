@@ -58,6 +58,8 @@ func TestOosHandler_Handle(t *testing.T) {
 		{"3-1", oos, args{"http://bølle.no"}, false},
 		{"3-2", oos, args{"http://bolle.no"}, false},
 		{"3-3", oos, args{"https://bømållag.no"}, false},
+		{"4-1", oos, args{"http://191.69.10.1"}, false},
+		{"4-2", oos, args{"http://127.0.0.1"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
