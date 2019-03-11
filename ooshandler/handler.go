@@ -93,7 +93,11 @@ func (o *OosHandler) ImportExisting() {
 			if line == "" {
 				continue
 			}
-			u, _ := o.parseUriAndGroup(line)
+			u, _, err := o.parseUriAndGroup(line)
+			if err != nil {
+				log.Warn(err)
+				continue
+			}
 			o.bloomContains(u)
 			i++
 		}
@@ -102,7 +106,11 @@ func (o *OosHandler) ImportExisting() {
 }
 
 func (o *OosHandler) Handle(uri string) (exists bool) {
-	u, g := o.parseUriAndGroup(uri)
+	u, g, err := o.parseUriAndGroup(uri)
+	if err != nil {
+		log.Warn(err)
+		return false
+	}
 
 	v, _, _ := o.bloomSF.Do(u.Host, func() (interface{}, error) {
 		exists = o.bloomContains(u)
@@ -117,10 +125,10 @@ func (o *OosHandler) Handle(uri string) (exists bool) {
 	return v.(bool)
 }
 
-func (o *OosHandler) parseUriAndGroup(uri string) (*url.URL, string) {
+func (o *OosHandler) parseUriAndGroup(uri string) (*url.URL, string, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
-		log.Warnf("Error parsing uri '%v': %v", uri, err)
+		return nil, "", fmt.Errorf("Error parsing uri '%v': %v", uri, err)
 	}
 
 	parts := strings.Split(sanitize.Name(u.Hostname()), ".")
@@ -134,7 +142,7 @@ func (o *OosHandler) parseUriAndGroup(uri string) (*url.URL, string) {
 	} else {
 		g = u.Host
 	}
-	return u, g
+	return u, g, nil
 }
 
 func Min(x, y int) int {
