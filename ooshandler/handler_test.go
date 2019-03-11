@@ -35,7 +35,7 @@ func TestOosHandler_Handle(t *testing.T) {
 	defer os.RemoveAll(testDir)
 	oos := NewOosHandler(testDir)
 
-	u, _ := oos.parseUriAndGroup("http://example1.com")
+	u, _, _ := oos.parseUriAndGroup("http://example1.com")
 	oos.bloomContains(u)
 
 	type args struct {
@@ -60,6 +60,7 @@ func TestOosHandler_Handle(t *testing.T) {
 		{"3-3", oos, args{"https://bømållag.no"}, false},
 		{"4-1", oos, args{"http://191.69.10.1"}, false},
 		{"4-2", oos, args{"http://127.0.0.1"}, false},
+		{"5-1", oos, args{"http://www.mindandlife.org%20/"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
