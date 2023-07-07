@@ -62,7 +62,7 @@ func NewOosService(port int, oosHandler *ooshandler.OosHandler) *OosService {
 func (o *OosService) Start() error {
 	ln, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", o.Port))
 	if err != nil {
-		log.Errorf("failed to start resolve handler: %v", err)
+		return fmt.Errorf("failed to listen: %v", err)
 	}
 
 	o.ln = ln
