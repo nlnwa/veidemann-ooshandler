@@ -25,7 +25,6 @@ import (
 	"golang.org/x/sync/singleflight"
 	"hash/fnv"
 	"io"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
@@ -61,7 +60,7 @@ func NewOosHandler(dir string) *OosHandler {
 }
 
 func (o *OosHandler) ImportExisting() {
-	files, err := ioutil.ReadDir(o.dir)
+	files, err := os.ReadDir(o.dir)
 	if err != nil {
 		log.Fatal(err)
 	}
