@@ -24,9 +24,10 @@ require (
 	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90 // indirect
 	github.com/prometheus/procfs v0.0.0-20190227231451-bbced9601137 // indirect
 	github.com/steakknife/hamming v0.0.0-20180906055317-003c143a81c2 // indirect
-	golang.org/x/crypto v0.0.0-20190228161510-8dd112bcdc25 // indirect
+	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/term v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	google.golang.org/genproto v0.0.0-20190305195749-c21a8b77f9f0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
