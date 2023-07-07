@@ -17,7 +17,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/nlnwa/veidemann-ooshandler/ooshandler"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"

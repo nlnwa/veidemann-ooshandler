@@ -26,7 +26,6 @@ import (
 	"github.com/prometheus/common/log"
 	"google.golang.org/grpc"
 	"net"
-	"net/http"
 )
 
 // OosService is a service which handles Out of Scope URIs.
