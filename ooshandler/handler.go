@@ -203,7 +203,7 @@ func (o *OosHandler) isInFile(uri *url.URL, group string) bool {
 		if err != nil {
 			log.Errorf("Error seeking to end of file: %v", err)
 		} else {
-		fmt.Fprintf(f, "%s://%s\n", uri.Scheme, uri.Host)
+			fmt.Fprintf(f, "%s://%s\n", uri.Scheme, uri.Host)
 		}
 	}
 
