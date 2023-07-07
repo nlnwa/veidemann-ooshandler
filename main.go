@@ -63,5 +63,5 @@ func main() {
 	})
 
 	log.Printf("Prometheus metrics exporter listening on %s", config.MetricsAddress)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s", config.MetricsAddress), nil))
+	log.Fatal(http.ListenAndServe(config.MetricsAddress, nil))
 }
