@@ -3,7 +3,7 @@ module github.com/nlnwa/veidemann-ooshandler
 go 1.20
 
 require (
-	github.com/golang/protobuf v1.3.1
+	github.com/golang/protobuf v1.5.3
 	github.com/kennygrant/sanitize v1.2.4
 	github.com/nlnwa/veidemann-api-go v0.0.0-20190306104406-d538d2e090b7
 	github.com/prometheus/client_golang v0.9.1
@@ -29,5 +29,6 @@ require (
 	golang.org/x/sys v0.0.0-20190306071516-a98ae47d97a5 // indirect
 	golang.org/x/text v0.3.0 // indirect
 	google.golang.org/genproto v0.0.0-20190305195749-c21a8b77f9f0 // indirect
+	google.golang.org/protobuf v1.26.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
 )
