@@ -25,7 +25,6 @@ import (
 	"golang.org/x/sync/singleflight"
 	"hash/fnv"
 	"io"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
@@ -61,7 +60,7 @@ func NewOosHandler(dir string) *OosHandler {
 }
 
 func (o *OosHandler) ImportExisting() {
-	files, err := ioutil.ReadDir(o.dir)
+	files, err := os.ReadDir(o.dir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -200,8 +199,12 @@ func (o *OosHandler) isInFile(uri *url.URL, group string) bool {
 	}
 
 	if !exists {
-		f.Seek(0, 2)
-		fmt.Fprintf(f, "%s://%s\n", uri.Scheme, uri.Host)
+		_, err := f.Seek(0, 2)
+		if err != nil {
+			log.Errorf("Error seeking to end of file: %v", err)
+		} else {
+			fmt.Fprintf(f, "%s://%s\n", uri.Scheme, uri.Host)
+		}
 	}
 
 	return exists

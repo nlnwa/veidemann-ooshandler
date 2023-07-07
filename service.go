@@ -26,7 +26,6 @@ import (
 	"github.com/prometheus/common/log"
 	"google.golang.org/grpc"
 	"net"
-	"net/http"
 )
 
 // OosService is a service which handles Out of Scope URIs.
@@ -35,9 +34,7 @@ type OosService struct {
 	ln         net.Listener
 	listenAddr net.Addr
 	lnSetup    bool
-	mux        *http.ServeMux
 	addr       string
-	server     ooshandlerV1.OosHandlerServer
 	oosHandler *ooshandler.OosHandler
 }
 
@@ -64,7 +61,7 @@ func NewOosService(port int, oosHandler *ooshandler.OosHandler) *OosService {
 func (o *OosService) Start() error {
 	ln, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", o.Port))
 	if err != nil {
-		log.Errorf("failed to start resolve handler: %v", err)
+		return fmt.Errorf("failed to listen: %v", err)
 	}
 
 	o.ln = ln
@@ -77,7 +74,10 @@ func (o *OosService) Start() error {
 
 	go func() {
 		log.Debugf("OosService listening on port: %d", o.Port)
-		grpcServer.Serve(ln)
+		err := grpcServer.Serve(ln)
+		if err != nil {
+			log.Fatalf("Failed to serve: %v", err)
+		}
 	}()
 	return nil
 }
