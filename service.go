@@ -77,7 +77,10 @@ func (o *OosService) Start() error {
 
 	go func() {
 		log.Debugf("OosService listening on port: %d", o.Port)
-		grpcServer.Serve(ln)
+		err := grpcServer.Serve(ln)
+		if err != nil {
+			log.Fatalf("Failed to serve: %v", err)
+		}
 	}()
 	return nil
 }

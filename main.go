@@ -39,18 +39,27 @@ func main() {
 
 	// Create OOSHandler
 	log.Printf("Out of Scope Handler is using directory: %v", config.DataDir)
-	os.MkdirAll(config.DataDir, 0777)
+	err := os.MkdirAll(config.DataDir, 0777)
+	if err != nil {
+		log.Fatalf("Unable to create data directory: %v", err)
+	}
 	oosHandler := ooshandler.NewOosHandler(config.DataDir)
 
 	// Start GRPC server
 	log.Printf("Out of Scope Handler GRPC service listening on port %d", config.ListenPort)
 	oos := NewOosService(config.ListenPort, oosHandler)
-	oos.Start()
+	err = oos.Start()
+	if err != nil {
+		log.Fatalf("Unable to start GRPC service: %v", err)
+	}
 
 	// Serve metrics
 	http.Handle(config.MetricsPath, promhttp.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(indexContent))
+		_, err = w.Write([]byte(indexContent))
+		if err != nil {
+			log.Errorf("Error writing index content: %v", err)
+		}
 	})
 
 	log.Printf("Prometheus metrics exporter listening on %s", config.MetricsAddress)
