@@ -35,9 +35,7 @@ type OosService struct {
 	ln         net.Listener
 	listenAddr net.Addr
 	lnSetup    bool
-	mux        *http.ServeMux
 	addr       string
-	server     ooshandlerV1.OosHandlerServer
 	oosHandler *ooshandler.OosHandler
 }
 
