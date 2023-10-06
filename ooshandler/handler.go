@@ -19,17 +19,17 @@ package ooshandler
 import (
 	"bufio"
 	"fmt"
-	"github.com/kennygrant/sanitize"
-	log "github.com/sirupsen/logrus"
-	"github.com/steakknife/bloomfilter"
-	"golang.org/x/sync/singleflight"
-	"hash/fnv"
 	"io"
 	"net/url"
 	"os"
 	"path"
 	"strings"
 	"sync"
+
+	"github.com/bits-and-blooms/bloom/v3"
+	"github.com/kennygrant/sanitize"
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/sync/singleflight"
 )
 
 const (
@@ -38,7 +38,7 @@ const (
 )
 
 type OosHandler struct {
-	bf          *bloomfilter.Filter
+	bf          *bloom.BloomFilter
 	dir         string
 	bloomSF     singleflight.Group
 	fmu         sync.Mutex // protects fileMutexes
@@ -46,10 +46,7 @@ type OosHandler struct {
 }
 
 func NewOosHandler(dir string) *OosHandler {
-	bf, err := bloomfilter.NewOptimal(maxElements, probCollide)
-	if err != nil {
-		panic(err)
-	}
+	bf := bloom.NewWithEstimates(maxElements, probCollide)
 	h := &OosHandler{
 		bf:          bf,
 		dir:         dir,
@@ -127,7 +124,7 @@ func (o *OosHandler) Handle(uri string) (exists bool) {
 func (o *OosHandler) parseUriAndGroup(uri string) (*url.URL, string, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
-		return nil, "", fmt.Errorf("Error parsing uri '%v': %v", uri, err)
+		return nil, "", fmt.Errorf("error parsing uri '%v': %v", uri, err)
 	}
 
 	parts := strings.Split(sanitize.Name(u.Hostname()), ".")
@@ -152,12 +149,7 @@ func Min(x, y int) int {
 }
 
 func (o *OosHandler) bloomContains(uri *url.URL) bool {
-	x := fnv.New64()
-	x.Write([]byte(uri.Host))
-
-	exists := o.bf.Contains(x) // could have false positives
-	o.bf.Add(x)
-	return exists
+	return o.bf.TestOrAddString(uri.Host)
 }
 
 func (o *OosHandler) write(uri *url.URL, group string) {
@@ -216,19 +208,15 @@ func (o *OosHandler) createFileName(group string) string {
 
 func (o *OosHandler) getFileLock(key string) *sync.Mutex {
 	o.fmu.Lock()
-	if o.fileMutexes == nil {
-		o.fileMutexes = make(map[string]*sync.Mutex)
-	}
+	defer o.fmu.Unlock()
 	var c *sync.Mutex
 	var ok bool
 	if c, ok = o.fileMutexes[key]; ok {
-		o.fmu.Unlock()
 		c.Lock()
 	} else {
 		c = new(sync.Mutex)
 		c.Lock()
 		o.fileMutexes[key] = c
-		o.fmu.Unlock()
 	}
 
 	return c
