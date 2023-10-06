@@ -10,7 +10,7 @@ require (
 	github.com/prometheus/common v0.26.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/steakknife/bloomfilter v0.0.0-20180906043351-99ee86d9200f
-	golang.org/x/sync v0.3.0
+	golang.org/x/sync v0.4.0
 	google.golang.org/grpc v1.58.2
 )
 
