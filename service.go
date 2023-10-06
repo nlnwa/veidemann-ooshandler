@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/golang/protobuf/ptypes/empty"
-	ooshandlerV1 "github.com/nlnwa/veidemann-api-go/ooshandler/v1"
+	ooshandlerV1 "github.com/nlnwa/veidemann-api/go/ooshandler/v1"
 	"github.com/nlnwa/veidemann-ooshandler/metrics"
 	"github.com/nlnwa/veidemann-ooshandler/ooshandler"
 	"github.com/prometheus/common/log"
@@ -35,6 +35,7 @@ type OosService struct {
 	listenAddr net.Addr
 	lnSetup    bool
 	addr       string
+	ooshandlerV1.UnimplementedOosHandlerServer
 	oosHandler *ooshandler.OosHandler
 }
 
