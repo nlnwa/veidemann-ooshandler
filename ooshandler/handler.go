@@ -19,17 +19,17 @@ package ooshandler
 import (
 	"bufio"
 	"fmt"
-	"github.com/kennygrant/sanitize"
-	log "github.com/sirupsen/logrus"
-	"github.com/steakknife/bloomfilter"
-	"golang.org/x/sync/singleflight"
-	"hash/fnv"
 	"io"
 	"net/url"
 	"os"
 	"path"
 	"strings"
 	"sync"
+
+	"github.com/bits-and-blooms/bloom/v3"
+	"github.com/kennygrant/sanitize"
+	"golang.org/x/exp/slog"
+	"golang.org/x/sync/singleflight"
 )
 
 const (
@@ -38,7 +38,7 @@ const (
 )
 
 type OosHandler struct {
-	bf          *bloomfilter.Filter
+	bf          *bloom.BloomFilter
 	dir         string
 	bloomSF     singleflight.Group
 	fmu         sync.Mutex // protects fileMutexes
@@ -46,10 +46,7 @@ type OosHandler struct {
 }
 
 func NewOosHandler(dir string) *OosHandler {
-	bf, err := bloomfilter.NewOptimal(maxElements, probCollide)
-	if err != nil {
-		panic(err)
-	}
+	bf := bloom.NewWithEstimates(maxElements, probCollide)
 	h := &OosHandler{
 		bf:          bf,
 		dir:         dir,
@@ -62,7 +59,8 @@ func NewOosHandler(dir string) *OosHandler {
 func (o *OosHandler) ImportExisting() {
 	files, err := os.ReadDir(o.dir)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("Could not read directory", "err", err)
+		os.Exit(1)
 	}
 
 	i := 0
@@ -71,9 +69,10 @@ func (o *OosHandler) ImportExisting() {
 			continue
 		}
 
-		f, err := os.Open(path.Join(o.dir, f.Name()))
+		file := path.Join(o.dir, f.Name())
+		f, err := os.Open(file)
 		if err != nil {
-			log.Errorf("Could not open file '%v'", path.Join(o.dir, f.Name()))
+			slog.Error("Could not open file", "file", file, "err", err)
 		}
 		defer f.Close()
 
@@ -84,7 +83,7 @@ func (o *OosHandler) ImportExisting() {
 				break
 			}
 			if err != nil {
-				log.Errorf("Error reading from file: %v", err)
+				slog.Error("Error reading from file", "err", err)
 				break
 			}
 
@@ -94,20 +93,20 @@ func (o *OosHandler) ImportExisting() {
 			}
 			u, _, err := o.parseUriAndGroup(line)
 			if err != nil {
-				log.Warn(err)
+				slog.Warn("Error parsing uri", "err", err)
 				continue
 			}
 			o.bloomContains(u)
 			i++
 		}
 	}
-	log.Printf("Imported %v existing URIs", i)
+	slog.Info("Imported existing URIs", "count", i)
 }
 
 func (o *OosHandler) Handle(uri string) (exists bool) {
 	u, g, err := o.parseUriAndGroup(uri)
 	if err != nil {
-		log.Warn(err)
+		slog.Warn("Error parsing uri", "err", err)
 		return false
 	}
 
@@ -127,7 +126,7 @@ func (o *OosHandler) Handle(uri string) (exists bool) {
 func (o *OosHandler) parseUriAndGroup(uri string) (*url.URL, string, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
-		return nil, "", fmt.Errorf("Error parsing uri '%v': %v", uri, err)
+		return nil, "", fmt.Errorf("error parsing uri '%v': %v", uri, err)
 	}
 
 	parts := strings.Split(sanitize.Name(u.Hostname()), ".")
@@ -152,18 +151,14 @@ func Min(x, y int) int {
 }
 
 func (o *OosHandler) bloomContains(uri *url.URL) bool {
-	x := fnv.New64()
-	x.Write([]byte(uri.Host))
-
-	exists := o.bf.Contains(x) // could have false positives
-	o.bf.Add(x)
-	return exists
+	return o.bf.TestOrAddString(uri.Host)
 }
 
 func (o *OosHandler) write(uri *url.URL, group string) {
-	f, err := os.OpenFile(o.createFileName(group), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	file := o.createFileName(group)
+	f, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		log.Warnf("Error opening file for writing: %v", err)
+		slog.Error("Error opening file for writing", "file", file, "err", err)
 		return
 	}
 	defer f.Close()
@@ -174,9 +169,10 @@ func (o *OosHandler) isInFile(uri *url.URL, group string) bool {
 	c := o.getFileLock(group)
 	defer c.Unlock()
 
-	f, err := os.OpenFile(o.createFileName(group), os.O_CREATE|os.O_RDWR, 0666)
+	file := o.createFileName(group)
+	f, err := os.OpenFile(file, os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
-		log.Debugf("Error opening file: %v", err)
+		slog.Warn("Error opening file", "file", file, "err", err)
 		return false
 	}
 	defer f.Close()
@@ -187,7 +183,7 @@ func (o *OosHandler) isInFile(uri *url.URL, group string) bool {
 		l, err := buf.ReadString('\n')
 		if err != nil {
 			if err != io.EOF {
-				log.Debugf("Error checking file: %v", err)
+				slog.Warn("Error reading next line from file", "file", file, "err", err)
 			}
 			break
 		}
@@ -201,7 +197,7 @@ func (o *OosHandler) isInFile(uri *url.URL, group string) bool {
 	if !exists {
 		_, err := f.Seek(0, 2)
 		if err != nil {
-			log.Errorf("Error seeking to end of file: %v", err)
+			slog.Error("Error seeking to end of file", "file", file, "err", err)
 		} else {
 			fmt.Fprintf(f, "%s://%s\n", uri.Scheme, uri.Host)
 		}
@@ -216,19 +212,15 @@ func (o *OosHandler) createFileName(group string) string {
 
 func (o *OosHandler) getFileLock(key string) *sync.Mutex {
 	o.fmu.Lock()
-	if o.fileMutexes == nil {
-		o.fileMutexes = make(map[string]*sync.Mutex)
-	}
+	defer o.fmu.Unlock()
 	var c *sync.Mutex
 	var ok bool
 	if c, ok = o.fileMutexes[key]; ok {
-		o.fmu.Unlock()
 		c.Lock()
 	} else {
 		c = new(sync.Mutex)
 		c.Lock()
 		o.fileMutexes[key] = c
-		o.fmu.Unlock()
 	}
 
 	return c

@@ -19,13 +19,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/golang/protobuf/ptypes/empty"
+	"net"
+	"os"
+
 	ooshandlerV1 "github.com/nlnwa/veidemann-api/go/ooshandler/v1"
 	"github.com/nlnwa/veidemann-ooshandler/metrics"
 	"github.com/nlnwa/veidemann-ooshandler/ooshandler"
-	"github.com/prometheus/common/log"
+	"golang.org/x/exp/slog"
 	"google.golang.org/grpc"
-	"net"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // OosService is a service which handles Out of Scope URIs.
@@ -39,13 +41,13 @@ type OosService struct {
 	oosHandler *ooshandler.OosHandler
 }
 
-func (o *OosService) SubmitUri(ctx context.Context, req *ooshandlerV1.SubmitUriRequest) (*empty.Empty, error) {
+func (o *OosService) SubmitUri(ctx context.Context, req *ooshandlerV1.SubmitUriRequest) (*emptypb.Empty, error) {
 	metrics.OosRequests.Inc()
 	exists := o.oosHandler.Handle(req.Uri.Uri)
 	if exists {
 		metrics.OosDuplicate.Inc()
 	}
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
 // NewOosService returns a new instance of OosService listening on the given port
@@ -74,10 +76,10 @@ func (o *OosService) Start() error {
 	ooshandlerV1.RegisterOosHandlerServer(grpcServer, o)
 
 	go func() {
-		log.Debugf("OosService listening on port: %d", o.Port)
 		err := grpcServer.Serve(ln)
 		if err != nil {
-			log.Fatalf("Failed to serve: %v", err)
+			slog.Error("Failed to serve", "err", err)
+			os.Exit(1)
 		}
 	}()
 	return nil

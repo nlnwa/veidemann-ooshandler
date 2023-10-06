@@ -17,11 +17,12 @@
 package main
 
 import (
-	"github.com/nlnwa/veidemann-ooshandler/ooshandler"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+
+	"github.com/nlnwa/veidemann-ooshandler/ooshandler"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"golang.org/x/exp/slog"
 )
 
 const indexContent = `<html>
@@ -36,20 +37,22 @@ const indexContent = `<html>
 func main() {
 	config := NewConfig()
 
+	slog.Info("Starting Out of Scope Handler", "config", config)
+
 	// Create OOSHandler
-	log.Printf("Out of Scope Handler is using directory: %v", config.DataDir)
 	err := os.MkdirAll(config.DataDir, 0777)
 	if err != nil {
-		log.Fatalf("Unable to create data directory: %v", err)
+		slog.Error("Unable to create data directory", "err", err)
+		os.Exit(1)
 	}
 	oosHandler := ooshandler.NewOosHandler(config.DataDir)
 
 	// Start GRPC server
-	log.Printf("Out of Scope Handler GRPC service listening on port %d", config.ListenPort)
 	oos := NewOosService(config.ListenPort, oosHandler)
 	err = oos.Start()
 	if err != nil {
-		log.Fatalf("Unable to start GRPC service: %v", err)
+		slog.Error("Unable to start GRPC service", "err", err)
+		os.Exit(1)
 	}
 
 	// Serve metrics
@@ -57,10 +60,13 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, err = w.Write([]byte(indexContent))
 		if err != nil {
-			log.Errorf("Error writing index content: %v", err)
+			slog.Error("Error writing index content", "err", err)
 		}
 	})
 
-	log.Printf("Prometheus metrics exporter listening on %s", config.MetricsAddress)
-	log.Fatal(http.ListenAndServe(config.MetricsAddress, nil))
+	err = http.ListenAndServe(config.MetricsAddress, nil)
+	if err != nil {
+		slog.Error("Unable to start metrics server", "err", err)
+		os.Exit(1)
+	}
 }

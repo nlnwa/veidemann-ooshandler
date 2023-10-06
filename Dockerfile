@@ -1,16 +1,20 @@
-FROM golang:alpine as builder
+FROM docker.io/golang:1.21.2 as builder
 
 WORKDIR /go/src/github.com/nlnwa/veidemann-ooshandler
+
+COPY go.mod go.sum ./
+RUN go mod download
+
 COPY . .
 
-# Compile the binary statically, so it can be run without libraries.
-RUN CGO_ENABLED=0 GOOS=linux go test ./... -a -ldflags '-extldflags "-s -w -static"' .
-RUN CGO_ENABLED=0 GOOS=linux go install -a -ldflags '-extldflags "-s -w -static"' .
+RUN CGO_ENABLED=0 GOOS=linux go build  -trimpath -ldflags "-s -w"
 
-FROM alpine
-COPY --from=builder /go/bin/veidemann-ooshandler /usr/local/bin/veidemann-ooshandler
+
+FROM gcr.io/distroless/static-debian12:nonroot
+
+COPY --from=builder /go/src/github.com/nlnwa/veidemann-ooshandler/veidemann-ooshandler /veidemann-ooshandler
 
 EXPOSE 9301 50052
 VOLUME "/data"
 
-ENTRYPOINT ["/usr/local/bin/veidemann-ooshandler"]
+ENTRYPOINT ["/veidemann-ooshandler"]
