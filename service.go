@@ -35,6 +35,7 @@ type OosService struct {
 	listenAddr net.Addr
 	lnSetup    bool
 	addr       string
+	ooshandlerV1.UnimplementedOosHandlerServer
 	oosHandler *ooshandler.OosHandler
 }
 
