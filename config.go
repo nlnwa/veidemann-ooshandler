@@ -19,6 +19,8 @@ package main
 import (
 	"flag"
 	"path/filepath"
+
+	"golang.org/x/exp/slog"
 )
 
 const (
@@ -34,6 +36,15 @@ type Config struct {
 	DataDir        string
 	MetricsAddress string
 	MetricsPath    string
+}
+
+func (c *Config) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.Int("listenPort", c.ListenPort),
+		slog.String("dataDir", c.DataDir),
+		slog.String("metricsAddress", c.MetricsAddress),
+		slog.String("metricsPath", c.MetricsPath),
+	)
 }
 
 // NewConfig creates a new config object from command line args

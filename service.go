@@ -19,13 +19,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
+	"os"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	ooshandlerV1 "github.com/nlnwa/veidemann-api/go/ooshandler/v1"
 	"github.com/nlnwa/veidemann-ooshandler/metrics"
 	"github.com/nlnwa/veidemann-ooshandler/ooshandler"
-	"github.com/prometheus/common/log"
+	"golang.org/x/exp/slog"
 	"google.golang.org/grpc"
-	"net"
 )
 
 // OosService is a service which handles Out of Scope URIs.
@@ -74,10 +76,10 @@ func (o *OosService) Start() error {
 	ooshandlerV1.RegisterOosHandlerServer(grpcServer, o)
 
 	go func() {
-		log.Debugf("OosService listening on port: %d", o.Port)
 		err := grpcServer.Serve(ln)
 		if err != nil {
-			log.Fatalf("Failed to serve: %v", err)
+			slog.Error("Failed to serve", "err", err)
+			os.Exit(1)
 		}
 	}()
 	return nil
