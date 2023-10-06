@@ -22,12 +22,12 @@ import (
 	"net"
 	"os"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	ooshandlerV1 "github.com/nlnwa/veidemann-api/go/ooshandler/v1"
 	"github.com/nlnwa/veidemann-ooshandler/metrics"
 	"github.com/nlnwa/veidemann-ooshandler/ooshandler"
 	"golang.org/x/exp/slog"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // OosService is a service which handles Out of Scope URIs.
@@ -41,13 +41,13 @@ type OosService struct {
 	oosHandler *ooshandler.OosHandler
 }
 
-func (o *OosService) SubmitUri(ctx context.Context, req *ooshandlerV1.SubmitUriRequest) (*empty.Empty, error) {
+func (o *OosService) SubmitUri(ctx context.Context, req *ooshandlerV1.SubmitUriRequest) (*emptypb.Empty, error) {
 	metrics.OosRequests.Inc()
 	exists := o.oosHandler.Handle(req.Uri.Uri)
 	if exists {
 		metrics.OosDuplicate.Inc()
 	}
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
 // NewOosService returns a new instance of OosService listening on the given port
