@@ -3,7 +3,7 @@ module github.com/nlnwa/veidemann-ooshandler
 go 1.20
 
 require (
-	github.com/bits-and-blooms/bloom/v3 v3.5.0
+	github.com/bits-and-blooms/bloom/v3 v3.6.0
 	github.com/kennygrant/sanitize v1.2.4
 	github.com/nlnwa/veidemann-api/go v1.0.0
 	github.com/prometheus/client_golang v1.17.0
@@ -16,7 +16,7 @@ require (
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bits-and-blooms/bitset v1.9.0 // indirect
+	github.com/bits-and-blooms/bitset v1.10.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
