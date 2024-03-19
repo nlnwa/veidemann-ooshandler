@@ -3,7 +3,7 @@ module github.com/nlnwa/veidemann-ooshandler
 go 1.20
 
 require (
-	github.com/bits-and-blooms/bloom/v3 v3.6.0
+	github.com/bits-and-blooms/bloom/v3 v3.7.0
 	github.com/kennygrant/sanitize v1.2.4
 	github.com/nlnwa/veidemann-api/go v1.0.0
 	github.com/prometheus/client_golang v1.19.0
