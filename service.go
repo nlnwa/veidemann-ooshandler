@@ -43,7 +43,7 @@ type OosService struct {
 
 func (o *OosService) SubmitUri(ctx context.Context, req *ooshandlerV1.SubmitUriRequest) (*emptypb.Empty, error) {
 	metrics.OosRequests.Inc()
-	exists := o.oosHandler.Handle(req.Uri.Uri)
+	exists := o.oosHandler.Handle(req.GetUri().GetUri())
 	if exists {
 		metrics.OosDuplicate.Inc()
 	}
