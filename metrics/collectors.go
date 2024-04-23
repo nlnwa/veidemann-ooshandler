@@ -18,7 +18,7 @@ package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/version"
+	"github.com/prometheus/client_golang/prometheus/collectors/version"
 )
 
 const namespace = "veidemann"
