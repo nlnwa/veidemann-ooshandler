@@ -1,6 +1,8 @@
 module github.com/nlnwa/veidemann-ooshandler
 
-go 1.20
+go 1.21
+
+toolchain go1.22.5
 
 require (
 	github.com/bits-and-blooms/bloom/v3 v3.7.0
