@@ -10,7 +10,7 @@ require (
 	github.com/nlnwa/veidemann-api/go v1.0.0
 	github.com/prometheus/client_golang v1.19.1
 	golang.org/x/exp v0.0.0-20231005195138-3e424a577f31
-	golang.org/x/sync v0.7.0
+	golang.org/x/sync v0.8.0
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.34.2
 )
