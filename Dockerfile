@@ -1,4 +1,4 @@
-FROM docker.io/golang:1.22.5 as builder
+FROM docker.io/golang:1.23.0 as builder
 
 WORKDIR /go/src/github.com/nlnwa/veidemann-ooshandler
 
